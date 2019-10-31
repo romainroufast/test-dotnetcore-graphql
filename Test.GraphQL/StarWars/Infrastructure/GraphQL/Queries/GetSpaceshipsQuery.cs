@@ -15,7 +15,7 @@ namespace Test.GraphQL.StarWars.Infrastructure.GraphQL.Queries
         {
             // one spaceship
             Field<SpaceshipType>(
-                "Spaceship",
+                "spaceship",
                 arguments: new QueryArguments(
                     new QueryArgument<IdGraphType> {Name = "id", Description = "The id of the spaceship"}),
                 resolve: context =>
@@ -33,7 +33,7 @@ namespace Test.GraphQL.StarWars.Infrastructure.GraphQL.Queries
             
             // list of spaceships
             Field<ListGraphType<SpaceshipType>>(
-                "Spaceships",
+                "spaceships",
                 resolve: context =>
                 {
                     var spaceships = mapper.Map<List<SpaceshipViewModel>>(spaceshipRepository.Get().Result);

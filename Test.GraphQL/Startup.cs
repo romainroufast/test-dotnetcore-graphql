@@ -1,20 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
-using GraphiQl;
-using GraphQL.Types;
+using GraphQL;
+using GraphQL.Server;
+using GraphQL.Server.Ui.Playground;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Test.GraphQL.StarWars.Domain.Droid;
 using Test.GraphQL.StarWars.Domain.Spaceship;
+using Test.GraphQL.StarWars.Infrastructure.GraphQL;
 using Test.GraphQL.StarWars.Infrastructure.GraphQL.Queries;
 using Test.GraphQL.StarWars.Infrastructure.Repositories;
 
@@ -26,6 +25,12 @@ namespace Test.GraphQL
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // If using Kestrel:
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
+
             services.AddLogging(builder => builder.AddConsole());
             services.AddAutoMapper(GetType());
 
@@ -37,7 +42,10 @@ namespace Test.GraphQL
             services.AddScoped<IDroidRepository, DroidRepository>();
             services.AddScoped<ISpaceshipRepository, SpaceshipRepository>();
             
-            // graphql queries
+            // graphql
+            services.AddScoped<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
+            services.AddScoped<AppSchema>();
+            services.AddGraphQL(o => { o.ExposeExceptions = false; }).AddGraphTypes(ServiceLifetime.Scoped);
             services.AddTransient<GetSpaceshipsQuery>();
 
             services.AddMvc(option => option.EnableEndpointRouting = false);
@@ -50,9 +58,14 @@ namespace Test.GraphQL
             {
                 app.UseDeveloperExceptionPage();
             }
+//            else
+//            {
+//                app.UseHsts();
+//            }
                 
-            // adding the GraphiQL UI
-            app.UseGraphiQl("/graphiql", "/graph");
+            // graphql
+            app.UseGraphQL<AppSchema>();
+            app.UseGraphQLPlayground(options: new GraphQLPlaygroundOptions());
             
             app.UseMvc();
         }
