@@ -1,16 +1,16 @@
 using AutoMapper;
 using GraphQL;
+using GraphQL.Relay.Types;
 using GraphQL.Server;
 using GraphQL.Server.Ui.Playground;
+using GraphQL.Types.Relay;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Test.GraphQL.StarWars.Domain.Droid;
 using Test.GraphQL.StarWars.Domain.Spaceship;
 using Test.GraphQL.StarWars.Infrastructure.GraphQL;
@@ -43,12 +43,22 @@ namespace Test.GraphQL
             services.AddScoped<ISpaceshipRepository, SpaceshipRepository>();
             
             // graphql
+            services.AddTransient(typeof(ConnectionType<>));
+            services.AddTransient(typeof(EdgeType<>));
+            services.AddTransient<NodeInterface>();
+            services.AddTransient<PageInfoType>();
             services.AddScoped<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
             services.AddScoped<AppSchema>();
             services.AddGraphQL(o => { o.ExposeExceptions = false; }).AddGraphTypes(ServiceLifetime.Scoped);
             services.AddTransient<GetSpaceshipsQuery>();
 
             services.AddMvc(option => option.EnableEndpointRouting = false);
+            services.AddCors(o => o.AddPolicy("AllowAllPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,15 +68,15 @@ namespace Test.GraphQL
             {
                 app.UseDeveloperExceptionPage();
             }
-//            else
-//            {
-//                app.UseHsts();
-//            }
+            else
+            {
+                app.UseHsts();
+            }
                 
-            // graphql
+            // middleware, order is important
+            app.UseCors("AllowAllPolicy");
             app.UseGraphQL<AppSchema>();
             app.UseGraphQLPlayground(options: new GraphQLPlaygroundOptions());
-            
             app.UseMvc();
         }
     }
