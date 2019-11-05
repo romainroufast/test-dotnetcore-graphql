@@ -34,8 +34,8 @@ namespace Test.GraphQL
             services.AddAutoMapper(GetType());
             
             // singleton
-            services.AddScoped<IDroidRepository, DroidRepository>();
-            services.AddScoped<ISpaceshipRepository, SpaceshipRepository>();
+            services.AddSingleton<IDroidRepository, DroidRepository>();
+            services.AddSingleton<ISpaceshipRepository, SpaceshipRepository>();
             
             // graphql
             services.AddTransient(typeof(ConnectionType<>));
