@@ -7,7 +7,6 @@ using GraphQL.Types.Relay;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -33,10 +32,6 @@ namespace Test.GraphQL
 
             services.AddLogging(builder => builder.AddConsole());
             services.AddAutoMapper(GetType());
-
-            // db context
-            services.AddDbContext<DroidRepository>(context => context.UseInMemoryDatabase("StarWarsDroids"));
-            services.AddDbContext<SpaceshipRepository>(context => context.UseInMemoryDatabase("StarWarsSpaceships"));
             
             // singleton
             services.AddScoped<IDroidRepository, DroidRepository>();
