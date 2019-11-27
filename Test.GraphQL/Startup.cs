@@ -52,7 +52,10 @@ namespace Test.GraphQL
             services.AddGraphQL(o => { o.ExposeExceptions = false; }).AddGraphTypes(ServiceLifetime.Scoped);
             services.AddTransient<GetSpaceshipsQuery>();
 
-            services.AddMvc(option => option.EnableEndpointRouting = false);
+            services.AddMvc(option =>
+            {
+                option.EnableEndpointRouting = false;
+            });
             services.AddCors(o => o.AddPolicy("AllowAllPolicy", builder =>
             {
                 builder.AllowAnyOrigin()

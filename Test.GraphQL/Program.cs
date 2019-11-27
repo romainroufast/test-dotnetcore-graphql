@@ -32,7 +32,12 @@ namespace Test.GraphQL
             });
             await spaceshipRepository.Add(new Spaceship
             {
-                Name = "The Big One",
+                Name = "Falcon",
+                CommanderId = commanderId
+            });
+            await spaceshipRepository.Add(new Spaceship
+            {
+                Name = "Commander II",
                 CommanderId = commanderId
             });
 
