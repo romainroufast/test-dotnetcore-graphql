@@ -2,29 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Test.GraphQL.StarWars.Domain.Spaceship;
 
 namespace Test.GraphQL.StarWars.Infrastructure.Repositories
 {
-    public class SpaceshipRepository : DbContext, ISpaceshipRepository
+    public class SpaceshipRepository : ISpaceshipRepository
     {
-        public SpaceshipRepository(DbContextOptions<SpaceshipRepository> options) : base(options) {}
-        
-        public DbSet<Spaceship> Spaceships { get; set; }
+        private List<Spaceship> Spaceships { get; set; }
+
+        public SpaceshipRepository()
+        {
+            Spaceships = new List<Spaceship>();
+        }
         
         public async Task<Guid> Add(Spaceship spaceship)
         {
-            var added = Spaceships.Add(spaceship);
-            await SaveChangesAsync();
-            Console.WriteLine($"Added Spaceship with id: {added.Entity.Id}");
-            return added.Entity.Id;
+            Spaceships.Add(spaceship);
+            Console.WriteLine($"Added Spaceship with id: {spaceship.Id.ToString()}");
+            return spaceship.Id;
         }
 
         public async Task AddRange(List<Spaceship> spaceships)
         {
             Spaceships.AddRange(spaceships);
-            await SaveChangesAsync();
         }
 
         public Task<Spaceship> Get(Guid id)
@@ -34,7 +34,7 @@ namespace Test.GraphQL.StarWars.Infrastructure.Repositories
 
         public Task<List<Spaceship>> Get()
         {
-            return Task.FromResult(Spaceships.ToList());
+            return Task.FromResult(Spaceships);
         }
     }
 }
